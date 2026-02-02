@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        color-scheme: dark;
+    }
+}
+
+@layer components {
+
+    /* Glass Panel Effect for Landing (Blur 12px) */
+    .glass-panel {
+        background: rgba(16, 22, 34, 0.4);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Glass Panel Effect for Settings (Blur 20px) */
+    .glass-panel-zen {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    /* Glass Card Effect */
+    .glass-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .glass-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.15);
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Text Glow */
+    .text-glow {
+        text-shadow: 0 0 40px rgba(255, 255, 255, 0.1);
+    }
+
+    /* Button Glow */
+    .button-glow {
+        box-shadow: 0 0 20px rgba(17, 82, 212, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .button-glow:hover {
+        box-shadow: 0 0 30px rgba(17, 82, 212, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Zen Page Transitions */
+    .zen-transition {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Custom Toggle Switch for Settings */
+    .toggle-checkbox:checked {
+        @apply right-0 z-10;
+        border-color: #39c91d;
+    }
+
+    .toggle-checkbox:checked+.toggle-label {
+        background-color: #39c91d;
+    }
+
+    /* Glass Effect for Identity */
+    .glass-effect {
+        background: rgba(17, 41, 37, 0.4);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+
+    /* Reveal Blur Effect for Dashboard */
+    .blur-reveal {
+        filter: blur(12px) grayscale(50%);
+        transform: scale(1.1);
+        transition: filter 0.5s ease, transform 0.5s ease;
+    }
+
+    .group:hover .blur-reveal {
+        filter: blur(0) grayscale(0%);
+        transform: scale(1);
+    }
+
+    /* Philosophy Glow Text */
+    .glow-text {
+        text-shadow: 0 0 20px rgba(19, 236, 164, 0.3);
+    }
+}
