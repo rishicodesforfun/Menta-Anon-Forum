@@ -61,11 +61,37 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
+    const sort = searchParams.get("sort") || "new"; // new, top, hot
     const anonId = request.headers.get("x-anonymous-id") || "";
 
-    // Convert map to array and sort by date
-    const allPosts = Array.from(posts.values())
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    // Convert map to array
+    let allPosts = Array.from(posts.values());
+
+    // Sort based on parameter
+    switch (sort) {
+        case "top":
+            // Sort by most likes
+            allPosts = allPosts.sort((a, b) => b.likes - a.likes);
+            break;
+        case "hot":
+            // Sort by relevance (combination of recency and engagement)
+            // Hot score = likes / (hours since posted + 2)^1.5
+            allPosts = allPosts.sort((a, b) => {
+                const hoursA = (Date.now() - new Date(a.createdAt).getTime()) / (1000 * 60 * 60);
+                const hoursB = (Date.now() - new Date(b.createdAt).getTime()) / (1000 * 60 * 60);
+                const scoreA = (a.likes + a.replyCount * 2) / Math.pow(hoursA + 2, 1.5);
+                const scoreB = (b.likes + b.replyCount * 2) / Math.pow(hoursB + 2, 1.5);
+                return scoreB - scoreA;
+            });
+            break;
+        case "new":
+        default:
+            // Sort by newest first
+            allPosts = allPosts.sort((a, b) =>
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+            break;
+    }
 
     // Paginate
     const start = (page - 1) * limit;
@@ -84,6 +110,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
         posts: postsWithLikeStatus,
+        sort,
         pagination: {
             page,
             limit,
