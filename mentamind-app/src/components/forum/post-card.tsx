@@ -2,9 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { GlassCard } from "@/components/ui/glass-card";
-import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Flag, Clock } from "lucide-react";
+import { Heart, MessageCircle, Share, Flag, MoreHorizontal, Clock } from "lucide-react";
 import { generateAnonName } from "@/lib/anonymous";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +29,7 @@ function formatTimeAgo(dateString: string): string {
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (seconds < 60) return "Just now";
+    if (seconds < 60) return "just now";
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
     if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
@@ -42,76 +40,86 @@ export function PostCard({ post, onLike, onReply, onFlag, index = 0 }: PostCardP
     const authorName = generateAnonName(post.authorId);
 
     return (
-        <motion.div
+        <motion.article
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05, duration: 0.4 }}
+            className="glass-card p-5"
         >
-            <GlassCard className="group">
-                {/* Author Header */}
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                        {/* Avatar */}
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/50 to-accent/50 flex items-center justify-center">
-                            <span className="text-sm font-semibold text-white">
-                                {authorName.split(" ").map(w => w[0]).join("")}
-                            </span>
-                        </div>
-                        <div>
-                            <p className="font-medium text-sm">{authorName}</p>
-                            <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {formatTimeAgo(post.createdAt)}
-                            </p>
-                        </div>
+            {/* Author Header */}
+            <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                    {/* Avatar */}
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/50 to-accent/50 flex items-center justify-center">
+                        <span className="text-sm font-semibold text-white">
+                            {authorName.split(" ").map(w => w[0]).join("")}
+                        </span>
                     </div>
-
-                    {/* Flag Button */}
-                    <button
-                        onClick={() => onFlag?.(post.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-destructive"
-                        title="Report this post"
-                    >
-                        <Flag className="w-4 h-4" />
-                    </button>
+                    <div>
+                        <p className="font-medium text-sm">{authorName}</p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            {formatTimeAgo(post.createdAt)}
+                        </p>
+                    </div>
                 </div>
 
-                {/* Content */}
-                <p className="text-foreground leading-relaxed mb-4 whitespace-pre-wrap">
-                    {post.content}
-                </p>
+                {/* More options */}
+                <button
+                    className="p-2 rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
+                >
+                    <MoreHorizontal className="w-4 h-4" />
+                </button>
+            </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 pt-4 border-t border-border/50">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onLike?.(post.id)}
+            {/* Content */}
+            <p className="text-foreground leading-relaxed mb-4 whitespace-pre-wrap">
+                {post.content}
+            </p>
+
+            {/* Action buttons - Like first, then comments */}
+            <div className="flex items-center gap-1 pt-3 border-t border-border/50">
+                {/* Like Button */}
+                <button
+                    onClick={() => onLike?.(post.id)}
+                    className={cn(
+                        "btn-ghost flex items-center gap-2",
+                        post.isLiked && "text-pink-500 hover:text-pink-600"
+                    )}
+                >
+                    <Heart
                         className={cn(
-                            "gap-2",
-                            post.isLiked && "text-pink-500 hover:text-pink-600"
+                            "w-4 h-4 transition-all",
+                            post.isLiked && "fill-current scale-110"
                         )}
-                    >
-                        <Heart
-                            className={cn(
-                                "w-4 h-4 transition-all",
-                                post.isLiked && "fill-current scale-110"
-                            )}
-                        />
-                        <span>{post.likes}</span>
-                    </Button>
+                    />
+                    <span className="text-sm font-medium">{post.likes}</span>
+                </button>
 
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onReply?.(post.id)}
-                        className="gap-2"
-                    >
-                        <MessageCircle className="w-4 h-4" />
-                        <span>{post.replyCount}</span>
-                    </Button>
-                </div>
-            </GlassCard>
-        </motion.div>
+                {/* Comments Button */}
+                <button
+                    onClick={() => onReply?.(post.id)}
+                    className="btn-ghost flex items-center gap-2"
+                >
+                    <MessageCircle className="w-4 h-4" />
+                    <span className="text-sm font-medium">{post.replyCount} Comments</span>
+                </button>
+
+                {/* Share Button */}
+                <button className="btn-ghost flex items-center gap-2">
+                    <Share className="w-4 h-4" />
+                    <span className="text-sm font-medium hidden sm:inline">Share</span>
+                </button>
+
+                {/* Report Button */}
+                <button
+                    onClick={() => onFlag?.(post.id)}
+                    className="btn-ghost flex items-center gap-2 ml-auto"
+                >
+                    <Flag className="w-4 h-4" />
+                    <span className="text-sm font-medium hidden sm:inline">Report</span>
+                </button>
+            </div>
+        </motion.article>
     );
 }

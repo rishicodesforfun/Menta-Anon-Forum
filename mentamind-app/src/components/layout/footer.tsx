@@ -51,19 +51,19 @@ export function Footer() {
 
                     {/* Crisis Resources */}
                     <div>
-                        <h4 className="font-semibold mb-4 text-destructive">Crisis Help</h4>
+                        <h4 className="font-semibold mb-4 text-destructive">Crisis Help (India)</h4>
                         <ul className="space-y-2 text-sm">
                             <li className="text-muted-foreground">
-                                <span className="font-medium text-foreground">US:</span> 988 Suicide & Crisis Lifeline
+                                <span className="font-medium text-foreground">iCall:</span> 9152987821
                             </li>
                             <li className="text-muted-foreground">
-                                <span className="font-medium text-foreground">UK:</span> 116 123 Samaritans
+                                <span className="font-medium text-foreground">Vandrevala:</span> 1860-2662-345
                             </li>
                             <li className="text-muted-foreground">
-                                <span className="font-medium text-foreground">India:</span> iCall 9152987821
+                                <span className="font-medium text-foreground">NIMHANS:</span> 080-46110007
                             </li>
                             <li className="text-muted-foreground">
-                                <span className="font-medium text-foreground">Text:</span> HOME to 741741
+                                <span className="font-medium text-foreground">Snehi:</span> 044-24640050
                             </li>
                         </ul>
                     </div>

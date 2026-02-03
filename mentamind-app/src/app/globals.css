@@ -34,6 +34,10 @@
         --ring: 250 84% 54%;
 
         --radius: 0.75rem;
+
+        /* Reddit-style vote colors */
+        --upvote: 16 100% 50%;
+        --downvote: 214 100% 50%;
     }
 
     .dark {
@@ -65,6 +69,9 @@
         --border: 215 28% 17%;
         --input: 215 28% 17%;
         --ring: 250 84% 60%;
+
+        --upvote: 16 100% 50%;
+        --downvote: 214 100% 50%;
     }
 }
 
@@ -103,6 +110,28 @@
         @apply backdrop-blur-xl;
         @apply border border-white/20 dark:border-white/10;
         @apply shadow-xl shadow-black/5 dark:shadow-black/20;
+    }
+
+    /* Reddit-style post container */
+    .post-container {
+        @apply relative overflow-hidden rounded-lg;
+        @apply bg-card border border-border;
+        @apply hover:border-muted-foreground/50 transition-colors;
+    }
+
+    /* Vote Button */
+    .vote-btn {
+        @apply p-1.5 rounded transition-colors duration-150;
+        @apply text-muted-foreground;
+        @apply hover:bg-secondary;
+    }
+
+    .vote-btn.upvoted {
+        @apply text-[hsl(var(--upvote))];
+    }
+
+    .vote-btn.downvoted {
+        @apply text-[hsl(var(--downvote))];
     }
 
     /* Gradient Text */

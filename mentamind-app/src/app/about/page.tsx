@@ -2,7 +2,8 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Navbar } from "@/components/layout/navbar";
+import { Sidebar } from "@/components/layout/sidebar";
+import { MainContent } from "@/components/layout/main-content";
 import { Footer } from "@/components/layout/footer";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
@@ -42,20 +43,20 @@ const values = [
 ];
 
 const crisisResources = [
-    { region: "United States", number: "988", name: "Suicide & Crisis Lifeline" },
-    { region: "United Kingdom", number: "116 123", name: "Samaritans" },
-    { region: "India", number: "9152987821", name: "iCall" },
-    { region: "Australia", number: "13 11 14", name: "Lifeline" },
-    { region: "Canada", number: "1-833-456-4566", name: "Crisis Services" },
-    { region: "International", number: "Text HOME to 741741", name: "Crisis Text Line" },
+    { region: "India - iCall", number: "9152987821", name: "TISS Mental Health" },
+    { region: "India - Vandrevala", number: "1860-2662-345", name: "24/7 Helpline" },
+    { region: "India - NIMHANS", number: "080-46110007", name: "National Institute" },
+    { region: "India - Snehi", number: "044-24640050", name: "Chennai Helpline" },
+    { region: "India - Connecting Trust", number: "9922001122", name: "Pune Helpline" },
+    { region: "India - Roshni Trust", number: "040-66202000", name: "Hyderabad Helpline" },
 ];
 
 export default function AboutPage() {
     return (
-        <div className="flex flex-col min-h-screen">
-            <Navbar />
+        <div className="min-h-screen">
+            <Sidebar />
 
-            <main className="flex-1">
+            <MainContent>
                 {/* Hero Section */}
                 <section className="py-20 lg:py-32">
                     <div className="container mx-auto px-6">
@@ -247,7 +248,7 @@ export default function AboutPage() {
                         </motion.div>
                     </div>
                 </section>
-            </main>
+            </MainContent>
 
             <Footer />
         </div>

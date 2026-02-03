@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Navbar } from "@/components/layout/navbar";
+import { Sidebar } from "@/components/layout/sidebar";
+import { MainContent } from "@/components/layout/main-content";
 import { Footer } from "@/components/layout/footer";
 import { PostCard, Post } from "@/components/forum/post-card";
 import { CreatePost } from "@/components/forum/create-post";
@@ -116,10 +117,11 @@ export default function CommunityPage() {
     };
 
     return (
-        <div className="flex flex-col min-h-screen">
-            <Navbar />
+        <div className="min-h-screen">
+            <Sidebar />
 
-            <main className="flex-1 py-8">
+            {/* Main content with left margin for sidebar */}
+            <MainContent className="py-8">
                 <div className="container mx-auto px-4 sm:px-6">
                     {/* Two Column Layout */}
                     <div className="flex gap-8 max-w-6xl mx-auto">
@@ -315,7 +317,7 @@ export default function CommunityPage() {
                                         <div className="text-sm">
                                             <p className="font-medium">In crisis?</p>
                                             <p className="text-muted-foreground mt-1">
-                                                Call 988 (US) or text HOME to 741741.
+                                                Call iCall: 9152987821 or Vandrevala: 1860-2662-345
                                             </p>
                                             <p className="text-muted-foreground">You matter. 💙</p>
                                         </div>
@@ -364,13 +366,13 @@ export default function CommunityPage() {
                             <p className="text-sm">
                                 <span className="font-medium">In crisis?</span>{" "}
                                 <span className="text-muted-foreground">
-                                    Call 988 (US) or text HOME to 741741.
+                                    Call iCall: 9152987821 or Vandrevala: 1860-2662-345
                                 </span>
                             </p>
                         </div>
                     </div>
                 </div>
-            </main>
+            </MainContent>
 
             <Footer />
         </div>

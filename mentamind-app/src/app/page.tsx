@@ -2,7 +2,8 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Navbar } from "@/components/layout/navbar";
+import { Sidebar } from "@/components/layout/sidebar";
+import { MainContent } from "@/components/layout/main-content";
 import { Footer } from "@/components/layout/footer";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
@@ -52,10 +53,10 @@ const stats = [
 
 export default function HomePage() {
     return (
-        <div className="flex flex-col min-h-screen">
-            <Navbar />
+        <div className="min-h-screen">
+            <Sidebar />
 
-            <main className="flex-1">
+            <MainContent>
                 {/* Hero Section */}
                 <section className="relative py-20 lg:py-32 overflow-hidden">
                     <div className="container mx-auto px-6">
@@ -296,7 +297,7 @@ export default function HomePage() {
                         </motion.div>
                     </div>
                 </section>
-            </main>
+            </MainContent>
 
             <Footer />
         </div>

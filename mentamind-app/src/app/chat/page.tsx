@@ -2,7 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Navbar } from "@/components/layout/navbar";
+import { Sidebar } from "@/components/layout/sidebar";
+import { MainContent } from "@/components/layout/main-content";
 import { Footer } from "@/components/layout/footer";
 import { GlassCard } from "@/components/ui/glass-card";
 import { Button } from "@/components/ui/button";
@@ -38,11 +39,11 @@ const CRISIS_KEYWORDS = [
 
 const CRISIS_RESPONSE = `I hear you, and I'm really concerned about what you're sharing. Your life matters deeply, and there are people who want to help right now.
 
-**Please reach out immediately:**
-• **US:** Call or text 988 (Suicide & Crisis Lifeline)
-• **UK:** Call 116 123 (Samaritans)
-• **India:** Call iCall 9152987821
-• **Text:** HOME to 741741 (Crisis Text Line)
+**Please reach out immediately (India):**
+• **iCall:** 9152987821
+• **Vandrevala Foundation:** 1860-2662-345 (24/7)
+• **NIMHANS:** 080-46110007
+• **Snehi:** 044-24640050
 
 You don't have to face this alone. Would you like to talk more about what you're going through?`;
 
@@ -177,10 +178,10 @@ export default function ChatPage() {
     };
 
     return (
-        <div className="flex flex-col min-h-screen">
-            <Navbar />
+        <div className="min-h-screen">
+            <Sidebar />
 
-            <main className="flex-1 py-8">
+            <MainContent className="py-8">
                 <div className="container mx-auto px-4 sm:px-6 h-full">
                     <div className="max-w-3xl mx-auto flex flex-col h-[calc(100vh-200px)]">
                         {/* Header */}
@@ -219,7 +220,7 @@ export default function ChatPage() {
                             <div className="flex items-start gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
                                 <AlertTriangle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
                                 <p className="text-xs text-muted-foreground">
-                                    I&apos;m an AI companion, not a therapist. For professional help, please consult a mental health professional. In crisis? Call 988.
+                                    I&apos;m an AI companion, not a therapist. For professional help, please consult a mental health professional. In crisis? Call iCall: 9152987821
                                 </p>
                             </div>
                         </motion.div>
@@ -325,7 +326,7 @@ export default function ChatPage() {
                         </motion.div>
                     </div>
                 </div>
-            </main>
+            </MainContent>
         </div>
     );
 }

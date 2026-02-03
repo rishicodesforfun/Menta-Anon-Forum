@@ -21,11 +21,11 @@ const CRISIS_KEYWORDS = [
 
 const CRISIS_RESPONSE = `I hear you, and I'm really concerned about what you're sharing. Your life matters deeply, and there are people who want to help right now.
 
-**Please reach out immediately:**
-• **US:** Call or text 988 (Suicide & Crisis Lifeline)
-• **UK:** Call 116 123 (Samaritans)
-• **India:** Call iCall 9152987821
-• **Text:** HOME to 741741 (Crisis Text Line)
+**Please reach out immediately (India):**
+• **iCall:** 9152987821
+• **Vandrevala Foundation:** 1860-2662-345 (24/7)
+• **NIMHANS:** 080-46110007
+• **Snehi:** 044-24640050
 
 You don't have to face this alone. Would you like to talk more about what you're going through?`;
 
