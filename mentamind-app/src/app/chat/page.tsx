@@ -109,23 +109,49 @@ export default function ChatPage() {
             timestamp: new Date(),
         };
 
-        setMessages((prev) => [...prev, userMessage]);
+        const updatedMessages = [...messages, userMessage];
+        setMessages(updatedMessages);
         setInput("");
         setIsTyping(true);
 
         try {
-            const response = await simulateAIResponse(userMessage.content);
+            // Call real API with anonymous ID and conversation history
+            const anonId = getAnonymousId();
+            const history = updatedMessages
+                .filter(m => m.id !== "welcome" && !m.id.startsWith("welcome-"))
+                .map(m => ({ role: m.role, content: m.content }));
+
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-anonymous-id": anonId,
+                },
+                body: JSON.stringify({
+                    message: userMessage.content,
+                    history,
+                }),
+            });
+
+            const data = await res.json();
 
             const assistantMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: "assistant",
-                content: response,
+                content: data.message || "I'm here for you. Could you tell me more?",
                 timestamp: new Date(),
             };
 
             setMessages((prev) => [...prev, assistantMessage]);
         } catch (error) {
             console.error("Failed to get response:", error);
+            const errorMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                role: "assistant",
+                content: "I'm having a moment of difficulty, but I'm still here for you. Could you try again?",
+                timestamp: new Date(),
+            };
+            setMessages((prev) => [...prev, errorMessage]);
         } finally {
             setIsTyping(false);
         }
@@ -213,8 +239,8 @@ export default function ChatPage() {
                                         {/* Avatar */}
                                         <div
                                             className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${message.role === "assistant"
-                                                    ? "bg-gradient-to-br from-primary to-accent"
-                                                    : "bg-secondary"
+                                                ? "bg-gradient-to-br from-primary to-accent"
+                                                : "bg-secondary"
                                                 }`}
                                         >
                                             {message.role === "assistant" ? (
@@ -227,8 +253,8 @@ export default function ChatPage() {
                                         {/* Message Bubble */}
                                         <div
                                             className={`max-w-[80%] rounded-2xl px-4 py-3 ${message.role === "assistant"
-                                                    ? "glass-card !bg-card/80"
-                                                    : "bg-primary text-primary-foreground"
+                                                ? "glass-card !bg-card/80"
+                                                : "bg-primary text-primary-foreground"
                                                 }`}
                                         >
                                             <p className="text-sm leading-relaxed whitespace-pre-wrap">

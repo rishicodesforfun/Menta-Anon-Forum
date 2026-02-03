@@ -4,6 +4,7 @@ const nextConfig = {
     images: {
         domains: [],
     },
+    devIndicators: false,
 };
 
 export default nextConfig;
