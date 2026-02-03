@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/components/providers";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -58,17 +59,19 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body className={`${inter.variable} font-sans`}>
-                <div className="relative min-h-screen overflow-hidden">
-                    {/* Ambient background gradients */}
-                    <div className="fixed inset-0 -z-10">
-                        <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" />
-                        <div className="absolute top-0 -right-4 w-72 h-72 bg-accent/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: "2s" }} />
-                        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: "4s" }} />
-                    </div>
+                <Providers>
+                    <div className="relative min-h-screen overflow-hidden">
+                        {/* Ambient background gradients */}
+                        <div className="fixed inset-0 -z-10">
+                            <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" />
+                            <div className="absolute top-0 -right-4 w-72 h-72 bg-accent/30 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: "2s" }} />
+                            <div className="absolute -bottom-8 left-20 w-72 h-72 bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{ animationDelay: "4s" }} />
+                        </div>
 
-                    {/* Main content */}
-                    {children}
-                </div>
+                        {/* Main content */}
+                        {children}
+                    </div>
+                </Providers>
             </body>
         </html>
     );

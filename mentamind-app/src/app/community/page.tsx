@@ -1,81 +1,87 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { PostCard, Post } from "@/components/forum/post-card";
 import { CreatePost } from "@/components/forum/create-post";
 import { GlassCard } from "@/components/ui/glass-card";
-import { getAnonymousId, generateAnonName } from "@/lib/anonymous";
+import { useSession } from "@/lib/session-context";
 import { Users, TrendingUp, Clock, AlertTriangle } from "lucide-react";
 
-// Mock data for demo - will be replaced with API calls
-const mockPosts: Post[] = [
-    {
-        id: "1",
-        content: "Today was really hard. I woke up feeling like the weight of the world was on my shoulders. But I made it through. Small wins matter. 💪",
-        authorId: "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-        likes: 24,
-        replyCount: 8,
-        createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-        isLiked: false,
-    },
-    {
-        id: "2",
-        content: "Does anyone else feel like they're just going through the motions? I've been feeling disconnected lately. Would love to hear how others cope with this.",
-        authorId: "b2c3d4e5-f6a7-8901-bcde-f23456789012",
-        likes: 45,
-        replyCount: 15,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-        isLiked: true,
-    },
-    {
-        id: "3",
-        content: "Just wanted to share a positive moment - I finally talked to someone about what I've been going through. It felt scary but also liberating. If you're on the fence about opening up, this is your sign. 🌟",
-        authorId: "c3d4e5f6-a7b8-9012-cdef-345678901234",
-        likes: 89,
-        replyCount: 23,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-        isLiked: false,
-    },
-    {
-        id: "4",
-        content: "Breathing exercise that helped me today: 4-7-8 technique. Breathe in for 4 seconds, hold for 7, exhale for 8. Repeat 4 times. Simple but effective.",
-        authorId: "d4e5f6a7-b8c9-0123-defa-456789012345",
-        likes: 156,
-        replyCount: 31,
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-        isLiked: true,
-    },
-];
-
 export default function CommunityPage() {
-    const [posts, setPosts] = useState<Post[]>(mockPosts);
-    const [anonId, setAnonId] = useState<string>("");
-    const [anonName, setAnonName] = useState<string>("");
+    const { userId, identity, isLoading: sessionLoading } = useSession();
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [isLoadingPosts, setIsLoadingPosts] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [rateLimitError, setRateLimitError] = useState<string | null>(null);
+
+    // Get the display name from session identity
+    const displayName = identity ? `${identity.name} ${identity.number}` : "";
+    const initials = identity ? identity.name.split(" ").map((w: string) => w[0]).join("") : "";
+
+    // Fetch posts from API
+    const fetchPosts = useCallback(async () => {
+        if (!userId) return;
+
+        try {
+            const res = await fetch("/api/posts", {
+                headers: {
+                    "x-anonymous-id": userId,
+                },
+            });
+
+            if (!res.ok) throw new Error("Failed to fetch posts");
+
+            const data = await res.json();
+            setPosts(data.posts);
+        } catch (err) {
+            console.error("Failed to fetch posts:", err);
+            setError("Failed to load posts. Please try again.");
+        } finally {
+            setIsLoadingPosts(false);
+        }
+    }, [userId]);
 
     useEffect(() => {
-        const id = getAnonymousId();
-        setAnonId(id);
-        setAnonName(generateAnonName(id));
-    }, []);
+        if (userId) {
+            fetchPosts();
+        }
+    }, [userId, fetchPosts]);
 
     const handleCreatePost = async (content: string) => {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        if (!userId) return;
 
-        const newPost: Post = {
-            id: Date.now().toString(),
-            content,
-            authorId: anonId,
-            likes: 0,
-            replyCount: 0,
-            createdAt: new Date().toISOString(),
-            isLiked: false,
-        };
+        setRateLimitError(null);
 
-        setPosts([newPost, ...posts]);
+        try {
+            const res = await fetch("/api/posts", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-anonymous-id": userId,
+                },
+                body: JSON.stringify({ content }),
+            });
+
+            if (res.status === 429) {
+                const data = await res.json();
+                setRateLimitError(`Rate limit reached. Please wait ${data.retryAfter} seconds before posting again.`);
+                return;
+            }
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || "Failed to create post");
+            }
+
+            const data = await res.json();
+            setPosts([data.post, ...posts]);
+        } catch (err) {
+            console.error("Failed to create post:", err);
+            setError("Failed to create post. Please try again.");
+        }
     };
 
     const handleLike = (postId: string) => {
@@ -123,7 +129,7 @@ export default function CommunityPage() {
                         </motion.div>
 
                         {/* User Identity Card */}
-                        {anonName && (
+                        {identity && !sessionLoading && (
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -134,12 +140,12 @@ export default function CommunityPage() {
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                                             <span className="text-sm font-semibold text-white">
-                                                {anonName.split(" ").map(w => w[0]).join("")}
+                                                {initials}
                                             </span>
                                         </div>
                                         <div>
                                             <p className="text-sm text-muted-foreground">Posting as</p>
-                                            <p className="font-medium">{anonName}</p>
+                                            <p className="font-medium">{displayName}</p>
                                         </div>
                                     </div>
                                 </GlassCard>
@@ -154,6 +160,20 @@ export default function CommunityPage() {
                             className="mb-8"
                         >
                             <CreatePost onSubmit={handleCreatePost} />
+
+                            {/* Rate Limit Error */}
+                            {rateLimitError && (
+                                <div className="mt-3 p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-sm">
+                                    ⏱️ {rateLimitError}
+                                </div>
+                            )}
+
+                            {/* General Error */}
+                            {error && (
+                                <div className="mt-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+                                    {error}
+                                </div>
+                            )}
                         </motion.div>
 
                         {/* Quick Stats */}
