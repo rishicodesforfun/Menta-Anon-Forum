@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
-import { Shield, Heart, Github, Twitter } from "lucide-react";
+import { Heart, Github, Twitter } from "lucide-react";
 
 export function Footer() {
     return (
@@ -16,12 +17,17 @@ export function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Brand */}
                     <div className="md:col-span-2">
-                        <Link href="/" className="flex items-center gap-2 mb-4">
-                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                                <Shield className="w-5 h-5 text-white" />
+                        <a href="https://mentamind.in/" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 mb-4">
+                            <div className="relative w-10 h-10 rounded-xl overflow-hidden">
+                                <Image
+                                    src="/logo.png"
+                                    alt="MentaMind Logo"
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                             <span className="text-xl font-bold gradient-text">MentaMind</span>
-                        </Link>
+                        </a>
                         <p className="text-muted-foreground max-w-sm">
                             A safe, anonymous space for mental health support. You&apos;re not alone in this journey.
                         </p>

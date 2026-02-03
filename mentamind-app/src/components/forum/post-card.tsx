@@ -39,6 +39,18 @@ function formatTimeAgo(dateString: string): string {
 export function PostCard({ post, onLike, onReply, onFlag, index = 0 }: PostCardProps) {
     const authorName = generateAnonName(post.authorId);
 
+    // Generate consistent color based on author ID
+    const colors = [
+        "bg-gradient-to-br from-teal-400 to-emerald-500",
+        "bg-gradient-to-br from-orange-400 to-pink-500",
+        "bg-gradient-to-br from-purple-400 to-indigo-500",
+        "bg-gradient-to-br from-blue-400 to-cyan-500",
+        "bg-gradient-to-br from-rose-400 to-red-500",
+        "bg-gradient-to-br from-amber-400 to-orange-500",
+    ];
+    const colorIndex = post.authorId.charCodeAt(0) % colors.length;
+    const avatarColor = colors[colorIndex];
+
     return (
         <motion.article
             initial={{ opacity: 0, y: 20 }}
@@ -49,8 +61,8 @@ export function PostCard({ post, onLike, onReply, onFlag, index = 0 }: PostCardP
             {/* Author Header */}
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                    {/* Avatar */}
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/50 to-accent/50 flex items-center justify-center">
+                    {/* Avatar with varied colors */}
+                    <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", avatarColor)}>
                         <span className="text-sm font-semibold text-white">
                             {authorName.split(" ").map(w => w[0]).join("")}
                         </span>

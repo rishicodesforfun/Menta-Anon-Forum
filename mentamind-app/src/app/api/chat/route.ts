@@ -111,9 +111,9 @@ export async function POST(request: NextRequest) {
             { role: "user", content: message },
         ];
 
-        // Call OpenRouter with GPT-4o-mini
+        // Call OpenRouter with Meta Llama 3.3 70B Instruct
         const completion = await openai.chat.completions.create({
-            model: "openai/gpt-4o-mini", // OpenRouter model string
+            model: "meta-llama/llama-3.3-70b-instruct", // Meta Llama 3.3 70B Instruct
             messages,
             max_tokens: 400,
             temperature: 0.7,

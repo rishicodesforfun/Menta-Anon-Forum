@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/session-context";
 import { useSidebar } from "@/lib/sidebar-context";
-import { Home, MessageCircle, Users, Info, Shield, LogOut, Sparkles, Menu, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, MessageCircle, Users, Info, LogOut, Sparkles, Menu, ChevronLeft, ChevronRight } from "lucide-react";
 
 const navItems = [
     { href: "/", label: "Home", icon: Home },
@@ -62,16 +63,23 @@ export function Sidebar() {
                 {/* Logo Section with Collapse Toggle */}
                 <div className="p-4 border-b border-border/30">
                     <div className="flex items-center justify-between">
-                        <Link
-                            href="/"
+                        <a
+                            href="https://mentamind.in/"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className={cn(
                                 "flex items-center gap-3 group",
                                 isCollapsed && "lg:justify-center"
                             )}
                             onClick={() => setIsMobileOpen(false)}
                         >
-                            <div className="relative w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 transition-shadow flex-shrink-0">
-                                <Shield className="w-5 h-5 text-white" />
+                            <div className="relative w-10 h-10 rounded-xl overflow-hidden shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 transition-shadow flex-shrink-0">
+                                <Image
+                                    src="/logo.png"
+                                    alt="MentaMind Logo"
+                                    fill
+                                    className="object-cover"
+                                />
                             </div>
                             {!isCollapsed && (
                                 <span className="text-xl font-bold gradient-text hidden lg:block">
@@ -82,7 +90,7 @@ export function Sidebar() {
                             <span className="text-xl font-bold gradient-text lg:hidden">
                                 MentaMind
                             </span>
-                        </Link>
+                        </a>
 
                         {/* Collapse Toggle - Desktop only */}
                         <button
