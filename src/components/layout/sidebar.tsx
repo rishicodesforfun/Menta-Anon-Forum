@@ -63,17 +63,17 @@ export function Sidebar() {
             <motion.aside
                 className={cn(
                     "fixed left-0 top-0 h-full z-50 glass-card !rounded-none lg:!rounded-r-2xl border-r border-border/50",
-                    "flex flex-col transition-all duration-300 ease-in-out !overflow-visible",
+                    "flex flex-col !overflow-visible",
                     // Width based on collapsed state
                     isCollapsed ? "lg:w-20" : "lg:w-64",
-                    "w-64", // Always full width on mobile
-                    // Mobile: slide in/out
-                    "lg:translate-x-0",
-                    isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+                    "w-64" // Always full width on mobile
                 )}
-                initial={{ x: -100, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.3 }}
+                initial={{ x: -256 }}
+                animate={{
+                    x: isMobileOpen ? 0 : (typeof window !== 'undefined' && window.innerWidth >= 1024 ? 0 : -256),
+                    opacity: 1
+                }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
             >
                 {/* Logo Section with Collapse Toggle */}
                 <div className="p-4 border-b border-border/30">
