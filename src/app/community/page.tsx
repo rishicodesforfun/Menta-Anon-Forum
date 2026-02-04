@@ -427,9 +427,8 @@ export default function CommunityPage() {
                         </div>
                     </div>
                 </div>
+                <Footer />
             </MainContent>
-
-            <Footer />
 
             {/* Flag Modal */}
             <FlagModal

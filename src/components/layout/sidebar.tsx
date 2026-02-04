@@ -63,7 +63,7 @@ export function Sidebar() {
             <motion.aside
                 className={cn(
                     "fixed left-0 top-0 h-full z-50 glass-card !rounded-none lg:!rounded-r-2xl border-r border-border/50",
-                    "flex flex-col transition-all duration-300 ease-in-out",
+                    "flex flex-col transition-all duration-300 ease-in-out !overflow-visible",
                     // Width based on collapsed state
                     isCollapsed ? "lg:w-20" : "lg:w-64",
                     "w-64", // Always full width on mobile
