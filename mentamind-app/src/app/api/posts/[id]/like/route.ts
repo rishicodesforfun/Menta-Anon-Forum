@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Reference to the shared posts store from the main route
-// In production, this would be a database call
+import prisma from "@/lib/db";
 
 interface PostLikeParams {
     params: Promise<{
@@ -20,12 +18,74 @@ export async function POST(request: NextRequest, { params }: PostLikeParams) {
         );
     }
 
-    // In a real app, this would update the database
-    // For now, returning a mock response
-    return NextResponse.json({
-        success: true,
-        postId: id,
-        liked: true,
-        message: "Like status updated",
-    });
+    try {
+        // Check if post exists
+        const post = await prisma.post.findUnique({
+            where: { id },
+        });
+
+        if (!post) {
+            return NextResponse.json(
+                { error: "Post not found" },
+                { status: 404 }
+            );
+        }
+
+        // Check if already liked
+        const existingLike = await prisma.postLike.findUnique({
+            where: {
+                postId_userId: {
+                    postId: id,
+                    userId: anonId,
+                },
+            },
+        });
+
+        if (existingLike) {
+            // Unlike: remove like and decrement count
+            await prisma.$transaction([
+                prisma.postLike.delete({
+                    where: { id: existingLike.id },
+                }),
+                prisma.post.update({
+                    where: { id },
+                    data: { likes: { decrement: 1 } },
+                }),
+            ]);
+
+            return NextResponse.json({
+                success: true,
+                postId: id,
+                liked: false,
+                likes: post.likes - 1,
+            });
+        } else {
+            // Like: add like and increment count
+            await prisma.$transaction([
+                prisma.postLike.create({
+                    data: {
+                        postId: id,
+                        userId: anonId,
+                    },
+                }),
+                prisma.post.update({
+                    where: { id },
+                    data: { likes: { increment: 1 } },
+                }),
+            ]);
+
+            return NextResponse.json({
+                success: true,
+                postId: id,
+                liked: true,
+                likes: post.likes + 1,
+            });
+        }
+    } catch (error) {
+        console.error("Failed to toggle like:", error);
+        return NextResponse.json(
+            { error: "Failed to update like status" },
+            { status: 500 }
+        );
+    }
 }

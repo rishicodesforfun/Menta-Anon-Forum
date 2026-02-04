@@ -10,7 +10,6 @@
  */
 
 import OpenAI from "openai";
-import { EmotionAnalysis } from "./emotion-analysis";
 
 // Initialize OpenAI client with OpenRouter
 const openai = new OpenAI({
@@ -67,8 +66,23 @@ Return ONLY valid JSON:
  * @param analyses - Array of emotion analyses from multiple sessions
  * @returns PsychologistSummary or null if generation fails
  */
+interface AnalysisInput {
+    primaryEmotions: string[];
+    secondaryEmotions: string[];
+    themes: string[];
+    possibleCoreIssue: string;
+    intensity: string;
+}
+
+/**
+ * Generates a psychologist-ready summary from emotion analysis data
+ * 
+ * @param analyses - Array of emotion analyses (from DB)
+ * @returns PsychologistSummary or null if generation fails
+ */
 export async function generatePsychologistSummary(
-    analyses: EmotionAnalysis[]
+    sessionId: string,
+    analyses: AnalysisInput[]
 ): Promise<PsychologistSummary | null> {
     try {
         if (analyses.length === 0) {
@@ -81,7 +95,6 @@ export async function generatePsychologistSummary(
 
         const prompt = SUMMARY_PROMPT.replace("<<<ANALYSIS_DATA>>>", analysisText);
 
-        // Call AI for summary generation
         const completion = await openai.chat.completions.create({
             model: "meta-llama/llama-3.3-70b-instruct",
             messages: [{ role: "user", content: prompt }],
@@ -90,18 +103,17 @@ export async function generatePsychologistSummary(
         });
 
         const responseText = completion.choices[0]?.message?.content || "";
-
-        // Parse JSON response
         const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+
         if (!jsonMatch) {
-            console.error("Summary generation: No JSON found in response");
+            console.error("Summary generation: No JSON found");
             return null;
         }
 
         const parsed = JSON.parse(jsonMatch[0]);
 
         return {
-            summary: parsed.summary || "Unable to generate summary.",
+            summary: parsed.summary || "Summary not available.",
             recommendations: parsed.recommendations || [],
             risk_level: parsed.risk_level || "low",
             generated_at: new Date().toISOString(),
@@ -114,51 +126,76 @@ export async function generatePsychologistSummary(
 }
 
 /**
- * Aggregates multiple analyses into a summary view
+ * Aggregates multiple emotion analyses into a single cohesive data structure
  */
-function aggregateAnalyses(analyses: EmotionAnalysis[]): {
-    all_emotions: string[];
-    all_themes: string[];
-    core_issues: string[];
-    intensity_trend: string[];
-    total_messages: number;
-} {
-    const allEmotions: string[] = [];
-    const allThemes: string[] = [];
+function aggregateAnalyses(analyses: AnalysisInput[]) {
+    const allPrimary = analyses.flatMap(a => a.primaryEmotions);
+    const allSecondary = analyses.flatMap(a => a.secondaryEmotions);
+    const allThemes = analyses.flatMap(a => a.themes);
     const coreIssues: string[] = [];
-    const intensityTrend: string[] = [];
-    let totalMessages = 0;
+    analyses.forEach(a => {
+        if (a.possibleCoreIssue && a.possibleCoreIssue !== "unspecified") {
+            coreIssues.push(a.possibleCoreIssue);
+        }
+    });
 
-    for (const analysis of analyses) {
-        allEmotions.push(...analysis.primary_emotions);
-        allEmotions.push(...analysis.secondary_emotions);
-        allThemes.push(...analysis.themes);
-        coreIssues.push(analysis.possible_core_issue);
-        intensityTrend.push(analysis.intensity);
-        totalMessages += analysis.message_count;
-    }
+    // Count meaningful frequencies
+    const primaryCounts = countFrequencies(allPrimary);
+    const themeCounts = countFrequencies(allThemes);
+    const issueCounts = countFrequencies(coreIssues);
+
+    // Determine peak intensity
+    const intensityLevels = ["low", "medium", "high", "crisis"];
+    let peakIntensity = "low";
+    analyses.forEach(a => {
+        if (intensityLevels.indexOf(a.intensity) > intensityLevels.indexOf(peakIntensity)) {
+            peakIntensity = a.intensity;
+        }
+    });
 
     return {
-        all_emotions: [...new Set(allEmotions)],
-        all_themes: [...new Set(allThemes)],
-        core_issues: [...new Set(coreIssues)],
-        intensity_trend: intensityTrend,
-        total_messages: totalMessages,
+        dominant_emotions: getTopN(primaryCounts, 3),
+        underlying_emotions: getTopN(countFrequencies(allSecondary), 3),
+        recurring_themes: getTopN(themeCounts, 3),
+        potential_core_issues: getTopN(issueCounts, 2),
+        peak_intensity: peakIntensity,
+        progression: analyses.map(a => a.intensity).join(" -> "),
     };
+}
+
+/**
+ * Helper to count frequencies of items in an array
+ */
+function countFrequencies<T>(arr: T[]): Map<T, number> {
+    const counts = new Map<T, number>();
+    for (const item of arr) {
+        counts.set(item, (counts.get(item) || 0) + 1);
+    }
+    return counts;
+}
+
+/**
+ * Helper to get top N items from a frequency map
+ */
+function getTopN<T>(counts: Map<T, number>, n: number): T[] {
+    return Array.from(counts.entries())
+        .sort(([, countA], [, countB]) => countB - countA)
+        .slice(0, n)
+        .map(([item]) => item);
 }
 
 /**
  * Determines risk level from intensity and keywords
  */
 export function calculateRiskLevel(
-    analyses: EmotionAnalysis[]
+    analyses: AnalysisInput[]
 ): "low" | "moderate" | "elevated" | "high" {
     const hascrisis = analyses.some(a => a.intensity === "crisis");
     const hasHigh = analyses.some(a => a.intensity === "high");
     const highRiskThemes = ["suicide", "self-harm", "hopelessness", "crisis"];
 
     const hasHighRiskTheme = analyses.some(a =>
-        a.themes.some(t => highRiskThemes.includes(t.toLowerCase()))
+        a.themes.some((t: string) => highRiskThemes.includes(t.toLowerCase()))
     );
 
     if (hascrisis || hasHighRiskTheme) return "high";

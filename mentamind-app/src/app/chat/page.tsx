@@ -29,21 +29,6 @@ interface Message {
 // Fixed opening message per PRD - clear disclaimer but friendly tone
 const OPENING_MESSAGE = "Hi, I'm Mentamind. I'm here to listen and support you through whatever you're feeling. Just to be clear: I'm an AI companion, not a therapist or doctor, and I can't diagnose or replace professional care. But I'm here for you. How are you feeling today?";
 
-const CRISIS_KEYWORDS = [
-    "suicide", "kill myself", "end my life", "want to die",
-    "self-harm", "hurt myself", "cutting", "overdose"
-];
-
-const CRISIS_RESPONSE = `I hear you, and I'm really concerned about what you're sharing. Your life matters deeply, and there are people who want to help right now.
-
-**Please reach out immediately (India):**
-• **iCall:** 9152987821
-• **Vandrevala Foundation:** 1860-2662-345 (24/7)
-• **NIMHANS:** 080-46110007
-• **Snehi:** 044-24640050
-
-You don't have to face this alone. Would you like to talk more about what you're going through?`;
-
 export default function ChatPage() {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
@@ -71,30 +56,6 @@ export default function ChatPage() {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    const checkForCrisis = (text: string): boolean => {
-        const lowerText = text.toLowerCase();
-        return CRISIS_KEYWORDS.some((keyword) => lowerText.includes(keyword));
-    };
-
-    const simulateAIResponse = async (userMessage: string): Promise<string> => {
-        // Check for crisis keywords first
-        if (checkForCrisis(userMessage)) {
-            return CRISIS_RESPONSE;
-        }
-
-        // Simulated responses - in production, this would call OpenAI API
-        const responses = [
-            "Thank you for sharing that with me. It takes courage to open up. Can you tell me more about how that makes you feel?",
-            "I hear you. Those feelings are valid and you're not alone in experiencing them. What do you think triggered these feelings?",
-            "That sounds really challenging. Remember, it's okay to not be okay sometimes. Have you been able to talk to anyone else about this?",
-            "I appreciate you trusting me with this. Let's explore this together. What would feel like a small step forward for you?",
-            "Your feelings matter, and I'm here to listen without judgment. What would help you feel a little better right now?",
-        ];
-
-        // Simulate typing delay
-        await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 2000));
-        return responses[Math.floor(Math.random() * responses.length)];
-    };
 
     const handleSend = async () => {
         if (!input.trim() || isTyping) return;
@@ -131,6 +92,19 @@ export default function ChatPage() {
             });
 
             const data = await res.json();
+
+            // Handle rate limiting
+            if (res.status === 429) {
+                const waitTime = data.retryAfter || 60;
+                const errorMessage: Message = {
+                    id: (Date.now() + 1).toString(),
+                    role: "assistant",
+                    content: `I need a moment to catch my breath. Please wait ${waitTime} seconds before sending another message. I'm still here for you.`,
+                    timestamp: new Date(),
+                };
+                setMessages((prev) => [...prev, errorMessage]);
+                return;
+            }
 
             const assistantMessage: Message = {
                 id: (Date.now() + 1).toString(),

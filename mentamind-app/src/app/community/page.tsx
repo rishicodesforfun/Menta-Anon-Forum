@@ -7,6 +7,7 @@ import { MainContent } from "@/components/layout/main-content";
 import { Footer } from "@/components/layout/footer";
 import { PostCard, Post } from "@/components/forum/post-card";
 import { CreatePost } from "@/components/forum/create-post";
+import { FlagModal } from "@/components/forum/flag-modal";
 import { GlassCard } from "@/components/ui/glass-card";
 import { useSession } from "@/lib/session-context";
 import { Users, TrendingUp, Clock, AlertTriangle, Flame, ArrowUp, Sparkles } from "lucide-react";
@@ -20,6 +21,8 @@ export default function CommunityPage() {
     const [error, setError] = useState<string | null>(null);
     const [rateLimitError, setRateLimitError] = useState<string | null>(null);
     const [sortBy, setSortBy] = useState<SortOption>("hot");
+    const [flagModalOpen, setFlagModalOpen] = useState(false);
+    const [flagPostId, setFlagPostId] = useState<string | null>(null);
 
     // Get the display name from session identity
     const displayName = identity ? `${identity.name} ${identity.number}` : "";
@@ -112,8 +115,8 @@ export default function CommunityPage() {
     };
 
     const handleFlag = (postId: string) => {
-        // TODO: Open flag modal
-        console.log("Flag:", postId);
+        setFlagPostId(postId);
+        setFlagModalOpen(true);
     };
 
     return (
@@ -375,6 +378,21 @@ export default function CommunityPage() {
             </MainContent>
 
             <Footer />
+
+            {/* Flag Modal */}
+            <FlagModal
+                isOpen={flagModalOpen}
+                postId={flagPostId || ""}
+                onClose={() => {
+                    setFlagModalOpen(false);
+                    setFlagPostId(null);
+                }}
+                onSubmit={(postId, reason, details) => {
+                    console.log("Flag submitted:", { postId, reason, details });
+                    setFlagModalOpen(false);
+                    setFlagPostId(null);
+                }}
+            />
         </div>
     );
 }

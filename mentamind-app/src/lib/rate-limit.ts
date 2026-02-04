@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
-
-// In-memory store for rate limiting (in production, use Redis)
-const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
+import prisma from "./db";
 
 // Rate limit configuration
 const RATE_LIMIT = {
@@ -10,11 +8,11 @@ const RATE_LIMIT = {
     chatPerMinute: 10,
 };
 
-export function checkRateLimit(
+export async function checkRateLimit(
     anonId: string,
     action: "post" | "reply" | "chat"
-): { allowed: boolean; remaining: number; resetIn: number } {
-    const now = Date.now();
+): Promise<{ allowed: boolean; remaining: number; resetIn: number }> {
+    const now = new Date();
     const key = `${anonId}:${action}`;
 
     // Get the limit based on action
@@ -38,37 +36,62 @@ export function checkRateLimit(
             windowMs = 60 * 1000;
     }
 
-    const record = rateLimitStore.get(key);
-
-    // If no record or window has expired, create new record
-    if (!record || now > record.resetTime) {
-        rateLimitStore.set(key, {
-            count: 1,
-            resetTime: now + windowMs,
+    try {
+        // Find existing rate limit record
+        const record = await prisma.rateLimit.findUnique({
+            where: { key },
         });
+
+        // If no record or window has expired, create/reset record
+        if (!record || now > record.resetTime) {
+            await prisma.rateLimit.upsert({
+                where: { key },
+                update: {
+                    count: 1,
+                    resetTime: new Date(now.getTime() + windowMs),
+                },
+                create: {
+                    key,
+                    count: 1,
+                    resetTime: new Date(now.getTime() + windowMs),
+                },
+            });
+            return {
+                allowed: true,
+                remaining: limit - 1,
+                resetIn: windowMs,
+            };
+        }
+
+        // Check if limit exceeded
+        if (record.count >= limit) {
+            return {
+                allowed: false,
+                remaining: 0,
+                resetIn: record.resetTime.getTime() - now.getTime(),
+            };
+        }
+
+        // Increment and allow
+        await prisma.rateLimit.update({
+            where: { key },
+            data: { count: record.count + 1 },
+        });
+
         return {
             allowed: true,
-            remaining: limit - 1,
+            remaining: limit - (record.count + 1),
+            resetIn: record.resetTime.getTime() - now.getTime(),
+        };
+    } catch (error) {
+        console.error("Rate limit check failed:", error);
+        // Fail open - allow request if DB is down
+        return {
+            allowed: true,
+            remaining: limit,
             resetIn: windowMs,
         };
     }
-
-    // Check if limit exceeded
-    if (record.count >= limit) {
-        return {
-            allowed: false,
-            remaining: 0,
-            resetIn: record.resetTime - now,
-        };
-    }
-
-    // Increment and allow
-    record.count++;
-    return {
-        allowed: true,
-        remaining: limit - record.count,
-        resetIn: record.resetTime - now,
-    };
 }
 
 export function rateLimitResponse(resetIn: number) {
@@ -85,4 +108,17 @@ export function rateLimitResponse(resetIn: number) {
             },
         }
     );
+}
+
+// Cleanup old rate limit records (call periodically)
+export async function cleanupExpiredRateLimits() {
+    try {
+        await prisma.rateLimit.deleteMany({
+            where: {
+                resetTime: { lt: new Date() },
+            },
+        });
+    } catch (error) {
+        console.error("Rate limit cleanup failed:", error);
+    }
 }

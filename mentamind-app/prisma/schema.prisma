@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Forum Posts
+model Post {
+  id          String   @id @default(cuid())
+  content     String
+  authorId    String   // Anonymous user ID
+  likes       Int      @default(0)
+  replyCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Track who liked the post
+  likedBy     PostLike[]
+  
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+// Post Likes (many-to-many)
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String   // Anonymous user ID
+  createdAt DateTime @default(now())
+  
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  @@unique([postId, userId])
+  @@index([userId])
+}
+
+// Rate Limiting
+model RateLimit {
+  id        String   @id @default(cuid())
+  key       String   @unique  // Format: "userId:action"
+  count     Int      @default(1)
+  resetTime DateTime
+  
+  @@index([key])
+  @@index([resetTime])
+}
+
+// Emotion Analysis (stored per session, invisible to user)
+model EmotionAnalysis {
+  id               String   @id @default(cuid())
+  sessionId        String   // Anonymous session ID
+  primaryEmotions  String[] // Array of emotions
+  secondaryEmotions String[]
+  themes           String[]
+  possibleCoreIssue String
+  intensity        String   // low, medium, high, crisis
+  messageCount     Int
+  createdAt        DateTime @default(now())
+  
+  @@index([sessionId])
+  @@index([createdAt])
+  @@index([intensity])
+}
+
+// Psychologist Summary (generated from EmotionAnalysis)
+model PsychologistSummary {
+  id              String   @id @default(cuid())
+  sessionId       String   
+  summary         String
+  recommendations String[]
+  riskLevel       String   // low, moderate, elevated, high
+  analysisCount   Int
+  generatedAt     DateTime @default(now())
+  
+  @@index([sessionId])
+  @@index([generatedAt])
+  @@index([riskLevel])
+}

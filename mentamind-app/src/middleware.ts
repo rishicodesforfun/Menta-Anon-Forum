@@ -20,11 +20,15 @@ export function middleware(request: NextRequest) {
     }
 
     // Check for session cookie/header
-    // Note: We check for cookies since localStorage isn't available in middleware
     const sessionCookie = request.cookies.get("mentamind_session");
 
-    // For client-side session (localStorage), we'll handle redirect in the page components
-    // Middleware just passes through for now - client-side check is more reliable
+    // If no session, redirect to login with return URL
+    if (!sessionCookie) {
+        const loginUrl = new URL("/login", request.url);
+        loginUrl.searchParams.set("redirect", pathname);
+        return NextResponse.redirect(loginUrl);
+    }
+
     return NextResponse.next();
 }
 

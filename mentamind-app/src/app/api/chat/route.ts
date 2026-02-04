@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check rate limit
-    const rateCheck = checkRateLimit(anonId, "chat");
+    const rateCheck = await checkRateLimit(anonId, "chat");
     if (!rateCheck.allowed) {
         return rateLimitResponse(rateCheck.resetIn);
     }
@@ -166,11 +166,30 @@ export async function POST(request: NextRequest) {
             model: "meta-llama/llama-3.3-70b-instruct", // Meta Llama 3.3 70B Instruct
             messages,
             max_tokens: 400,
-            temperature: 0.7,
+            temperature: 0.3, // Low temperature (0.2-0.4) for crisis stability per spec
         });
 
         const response = completion.choices[0]?.message?.content ||
             "I'm here for you. Could you tell me more about how you're feeling?";
+
+        // BACKGROUND: Run emotion analysis (invisible to user)
+        // Count user messages in history
+        const userMessageCount = history.filter((m: { role: string }) => m.role === "user").length + 1;
+
+        if (userMessageCount % 5 === 0) {
+            // Import and run analysis asynchronously (fire-and-forget)
+            import("@/lib/emotion-analysis").then(({ analyzeAndStoreEmotions }) => {
+                const conversationForAnalysis = [
+                    ...history.map((m: { role: string; content: string }) => ({
+                        role: m.role as "user" | "assistant",
+                        content: m.content,
+                    })),
+                    { role: "user" as const, content: message },
+                    { role: "assistant" as const, content: response },
+                ];
+                analyzeAndStoreEmotions(anonId, conversationForAnalysis).catch(console.error);
+            }).catch(console.error);
+        }
 
         return NextResponse.json({
             message: response,
@@ -186,3 +205,4 @@ export async function POST(request: NextRequest) {
         });
     }
 }
+

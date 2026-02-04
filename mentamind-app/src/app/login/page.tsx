@@ -120,12 +120,18 @@ export default function LoginPage() {
         localStorage.setItem("mentamind_identity", JSON.stringify(identity));
         localStorage.setItem("mentamind_logged_in", "true");
 
+        // Set session cookie for middleware auth (expires in 30 days)
+        const expires = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toUTCString();
+        document.cookie = `mentamind_session=${userId}; path=/; expires=${expires}; SameSite=Lax`;
+
         // Refresh the session context so it picks up the new values
         refreshSession();
 
-        // Navigate to community
+        // Navigate to community or redirect URL
         setTimeout(() => {
-            router.push("/community");
+            const params = new URLSearchParams(window.location.search);
+            const redirect = params.get("redirect") || "/community";
+            router.push(redirect);
         }, 300);
     };
 

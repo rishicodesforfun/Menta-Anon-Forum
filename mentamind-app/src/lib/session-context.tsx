@@ -93,6 +93,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem("mentamind_user_id");
         localStorage.removeItem("mentamind_identity");
         localStorage.removeItem("mentamind_logged_in");
+        // Clear session cookie
+        document.cookie = "mentamind_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC";
         setUserId(null);
         setIdentity(null);
         setIsLoggedIn(false);

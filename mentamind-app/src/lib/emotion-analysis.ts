@@ -13,6 +13,7 @@
  */
 
 import OpenAI from "openai";
+import prisma from "./db";
 
 // Initialize OpenAI client with OpenRouter
 const openai = new OpenAI({
@@ -25,14 +26,12 @@ const openai = new OpenAI({
 });
 
 // Types for emotion analysis
-export interface EmotionAnalysis {
+export interface EmotionAnalysisResult {
     primary_emotions: string[];
     secondary_emotions: string[];
     themes: string[];
     possible_core_issue: string;
     intensity: "low" | "medium" | "high" | "crisis";
-    timestamp: string;
-    message_count: number;
 }
 
 export interface ConversationMessage {
@@ -65,15 +64,17 @@ Return ONLY this JSON format:
 }`;
 
 /**
- * Analyzes a conversation for emotional content
- * Should be called after every 3-5 user messages
+ * Analyzes a conversation for emotional content and stores in database
+ * Should be called after every 5 user messages (background, invisible to user)
  * 
+ * @param sessionId - Anonymous session ID
  * @param conversation - Array of conversation messages
- * @returns EmotionAnalysis object or null if analysis fails
+ * @returns EmotionAnalysisResult or null if analysis fails
  */
-export async function analyzeEmotions(
+export async function analyzeAndStoreEmotions(
+    sessionId: string,
     conversation: ConversationMessage[]
-): Promise<EmotionAnalysis | null> {
+): Promise<EmotionAnalysisResult | null> {
     try {
         // Only analyze if there are enough user messages
         const userMessages = conversation.filter(m => m.role === "user");
@@ -113,16 +114,28 @@ export async function analyzeEmotions(
             return null;
         }
 
-        // Return structured analysis
-        return {
+        const result: EmotionAnalysisResult = {
             primary_emotions: parsed.primary_emotions || [],
             secondary_emotions: parsed.secondary_emotions || [],
             themes: parsed.themes || [],
             possible_core_issue: parsed.possible_core_issue || "unspecified",
             intensity: parsed.intensity || "medium",
-            timestamp: new Date().toISOString(),
-            message_count: userMessages.length,
         };
+
+        // Store in database (background, fire-and-forget)
+        await prisma.emotionAnalysis.create({
+            data: {
+                sessionId,
+                primaryEmotions: result.primary_emotions,
+                secondaryEmotions: result.secondary_emotions,
+                themes: result.themes,
+                possibleCoreIssue: result.possible_core_issue,
+                intensity: result.intensity,
+                messageCount: userMessages.length,
+            },
+        });
+
+        return result;
     } catch (error) {
         console.error("Emotion analysis failed:", error);
         return null;
@@ -138,14 +151,25 @@ export function shouldRunAnalysis(userMessageCount: number): boolean {
 }
 
 /**
- * Formats analysis for storage or display
- * Removes any potentially sensitive data
+ * Get all analyses for a session (for psychologist summary)
  */
-export function sanitizeAnalysis(analysis: EmotionAnalysis): EmotionAnalysis {
-    return {
-        ...analysis,
-        // Ensure no PII slips through themes
-        themes: analysis.themes.map(t => t.toLowerCase().trim()),
-        possible_core_issue: analysis.possible_core_issue.toLowerCase().trim(),
-    };
+export async function getSessionAnalyses(sessionId: string) {
+    return prisma.emotionAnalysis.findMany({
+        where: { sessionId },
+        orderBy: { createdAt: "asc" },
+    });
+}
+
+/**
+ * Get recent high-intensity analyses (for monitoring)
+ */
+export async function getHighIntensityAnalyses(hours: number = 24) {
+    const since = new Date(Date.now() - hours * 60 * 60 * 1000);
+    return prisma.emotionAnalysis.findMany({
+        where: {
+            intensity: { in: ["high", "crisis"] },
+            createdAt: { gte: since },
+        },
+        orderBy: { createdAt: "desc" },
+    });
 }
