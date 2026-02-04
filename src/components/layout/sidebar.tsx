@@ -16,6 +16,21 @@ const navItems = [
     { href: "/about", label: "About", icon: Info },
 ];
 
+// Helper for smooth text transition
+function SidebarText({ children, isCollapsed, className }: { children: React.ReactNode, isCollapsed: boolean, className?: string }) {
+    return (
+        <span
+            className={cn(
+                "overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out",
+                isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100",
+                className
+            )}
+        >
+            {children}
+        </span>
+    );
+}
+
 export function Sidebar() {
     const pathname = usePathname();
     const { isLoggedIn, identity, logout, isLoading } = useSession();
@@ -48,7 +63,7 @@ export function Sidebar() {
             <motion.aside
                 className={cn(
                     "fixed left-0 top-0 h-full z-50 glass-card !rounded-none lg:!rounded-r-2xl border-r border-border/50",
-                    "flex flex-col transition-all duration-300",
+                    "flex flex-col transition-all duration-300 ease-in-out",
                     // Width based on collapsed state
                     isCollapsed ? "lg:w-20" : "lg:w-64",
                     "w-64", // Always full width on mobile
@@ -68,8 +83,9 @@ export function Sidebar() {
                             target="_blank"
                             rel="noopener noreferrer"
                             className={cn(
-                                "flex items-center gap-3 group",
-                                isCollapsed && "lg:justify-center"
+                                "flex items-center gap-3 group transition-all duration-300",
+                                // Use padding to center icon when collapsed instead of justify-center
+                                isCollapsed ? "lg:pl-1.5" : ""
                             )}
                             onClick={() => setIsMobileOpen(false)}
                         >
@@ -81,11 +97,10 @@ export function Sidebar() {
                                     className="object-cover"
                                 />
                             </div>
-                            {!isCollapsed && (
-                                <span className="text-xl font-bold gradient-text hidden lg:block">
-                                    MentaMind
-                                </span>
-                            )}
+                            <SidebarText isCollapsed={isCollapsed} className="text-xl font-bold gradient-text hidden lg:block">
+                                MentaMind
+                            </SidebarText>
+
                             {/* Always show on mobile */}
                             <span className="text-xl font-bold gradient-text lg:hidden">
                                 MentaMind
@@ -95,7 +110,10 @@ export function Sidebar() {
                         {/* Collapse Toggle - Desktop only */}
                         <button
                             onClick={() => setIsCollapsed(!isCollapsed)}
-                            className="hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-secondary/50 transition-colors text-muted-foreground hover:text-foreground"
+                            className={cn(
+                                "hidden lg:flex items-center justify-center w-8 h-8 rounded-lg hover:bg-secondary/50 transition-colors text-muted-foreground hover:text-foreground",
+                                isCollapsed ? "absolute right-0 top-20 translate-x-full bg-card border border-l-0 border-border/50 rounded-l-none !rounded-r-lg shadow-md" : ""
+                            )}
                             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                         >
                             {isCollapsed ? (
@@ -107,10 +125,16 @@ export function Sidebar() {
 
                         {/* Mobile Close Button */}
                         <button
-                            onClick={() => setIsMobileOpen(false)}
-                            className="lg:hidden p-2 rounded-lg hover:bg-secondary/50 transition-colors text-muted-foreground"
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsMobileOpen(false);
+                            }}
+                            className="lg:hidden p-3 -mr-2 rounded-lg hover:bg-secondary/50 transition-colors text-muted-foreground cursor-pointer active:scale-95 touch-manipulation"
+                            aria-label="Close menu"
                         >
-                            <ChevronLeft className="w-5 h-5" />
+                            <ChevronLeft className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
@@ -132,16 +156,20 @@ export function Sidebar() {
                                 href={item.href}
                                 onClick={() => setIsMobileOpen(false)}
                                 className={cn(
-                                    "relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200",
+                                    "relative flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-300",
                                     isActive
                                         ? "text-primary bg-primary/10"
                                         : "text-muted-foreground hover:text-foreground hover:bg-secondary/50",
-                                    isCollapsed && "lg:justify-center lg:px-2"
+                                    // Use dynamic padding for centering
+                                    isCollapsed && "lg:pl-3.5"
                                 )}
                                 title={isCollapsed ? item.label : undefined}
                             >
                                 <Icon className="w-5 h-5 flex-shrink-0" />
-                                {!isCollapsed && <span className="hidden lg:inline">{item.label}</span>}
+                                <SidebarText isCollapsed={isCollapsed} className="hidden lg:inline">
+                                    {item.label}
+                                </SidebarText>
+
                                 {/* Always show on mobile */}
                                 <span className="lg:hidden">{item.label}</span>
 
@@ -161,25 +189,26 @@ export function Sidebar() {
                 <div className="p-2 border-t border-border/30">
                     {isLoading ? (
                         <div className={cn(
-                            "rounded-xl bg-secondary/50 animate-pulse",
-                            isCollapsed ? "lg:w-12 lg:h-12 lg:mx-auto w-full h-16" : "w-full h-16"
+                            "rounded-xl bg-secondary/50 animate-pulse transition-all duration-300",
+                            isCollapsed ? "lg:h-12 lg:mx-auto w-full h-16" : "w-full h-16"
                         )} />
                     ) : isLoggedIn && identity ? (
-                        <div className={cn("space-y-2", isCollapsed && "lg:space-y-2")}>
+                        <div className={cn("space-y-2 transition-all duration-300", isCollapsed && "lg:space-y-2")}>
                             {/* Identity Badge */}
                             <div className={cn(
-                                "flex items-center gap-3 p-2 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10",
-                                isCollapsed && "lg:justify-center lg:p-2"
+                                "flex items-center gap-3 p-2 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 transition-all duration-300",
+                                isCollapsed && "lg:pl-2.5"
                             )}>
                                 <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
                                     <Sparkles className="w-4 h-4 text-white" />
                                 </div>
-                                {!isCollapsed && (
-                                    <div className="flex-1 min-w-0 hidden lg:block">
-                                        <p className="text-sm font-medium truncate">{identity.name}</p>
-                                        <p className="text-xs text-muted-foreground">{identity.number}</p>
-                                    </div>
-                                )}
+                                <div className="flex-1 min-w-0 hidden lg:block overflow-hidden">
+                                    <SidebarText isCollapsed={isCollapsed}>
+                                        <span className="block text-sm font-medium truncate">{identity.name}</span>
+                                        <span className="block text-xs text-muted-foreground">{identity.number}</span>
+                                    </SidebarText>
+                                </div>
+
                                 {/* Always show on mobile */}
                                 <div className="flex-1 min-w-0 lg:hidden">
                                     <p className="text-sm font-medium truncate">{identity.name}</p>
@@ -194,13 +223,15 @@ export function Sidebar() {
                                     setIsMobileOpen(false);
                                 }}
                                 className={cn(
-                                    "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors",
-                                    isCollapsed && "lg:justify-center lg:px-2"
+                                    "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-all duration-300",
+                                    isCollapsed && "lg:pl-4"
                                 )}
                                 title={isCollapsed ? "Log out" : undefined}
                             >
                                 <LogOut className="w-5 h-5 flex-shrink-0" />
-                                {!isCollapsed && <span className="hidden lg:inline">Log out</span>}
+                                <SidebarText isCollapsed={isCollapsed} className="hidden lg:inline">
+                                    Log out
+                                </SidebarText>
                                 <span className="lg:hidden">Log out</span>
                             </button>
                         </div>
@@ -209,7 +240,7 @@ export function Sidebar() {
                             href="/login"
                             onClick={() => setIsMobileOpen(false)}
                             className={cn(
-                                "block w-full px-4 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-white text-sm font-medium text-center hover:opacity-90 transition-opacity",
+                                "block w-full px-4 py-3 rounded-xl bg-gradient-to-r from-primary to-accent text-white text-sm font-medium text-center hover:opacity-90 transition-all duration-300",
                                 isCollapsed && "lg:px-2"
                             )}
                             title={isCollapsed ? "Enter Space" : undefined}

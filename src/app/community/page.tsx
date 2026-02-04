@@ -52,11 +52,26 @@ export default function CommunityPage() {
         }
     }, [userId, sortBy]);
 
+    const [stats, setStats] = useState({ onlineCount: 0, postsToday: 0 });
+
     useEffect(() => {
         if (userId) {
             fetchPosts(sortBy);
+            fetchStats();
         }
     }, [userId, sortBy, fetchPosts]);
+
+    const fetchStats = async () => {
+        try {
+            const res = await fetch("/api/stats");
+            if (res.ok) {
+                const data = await res.json();
+                setStats(data);
+            }
+        } catch (e) {
+            console.error("Failed to fetch stats", e);
+        }
+    };
 
     const handleSortChange = (newSort: SortOption) => {
         setSortBy(newSort);
@@ -96,8 +111,11 @@ export default function CommunityPage() {
         }
     };
 
-    const handleLike = (postId: string) => {
-        setPosts(posts.map((post) => {
+    const handleLike = async (postId: string) => {
+        if (!userId) return;
+
+        // 1. Optimistic UI Update (Instant feedback)
+        setPosts(currentPosts => currentPosts.map((post) => {
             if (post.id === postId) {
                 return {
                     ...post,
@@ -107,6 +125,40 @@ export default function CommunityPage() {
             }
             return post;
         }));
+
+        try {
+            // 2. Call API
+            const res = await fetch(`/api/posts/${postId}/like`, {
+                method: "POST",
+                headers: {
+                    "x-anonymous-id": userId,
+                },
+            });
+
+            if (!res.ok) {
+                throw new Error("Failed to like post");
+            }
+
+            // 3. Sync with server truth (optional, but good for consistency)
+            const data = await res.json();
+            setPosts(currentPosts => currentPosts.map(p =>
+                p.id === postId ? { ...p, likes: data.likes, isLiked: data.liked } : p
+            ));
+
+        } catch (error) {
+            console.error("Like failed:", error);
+            // 4. Revert optimistic update on error
+            setPosts(currentPosts => currentPosts.map((post) => {
+                if (post.id === postId) {
+                    return {
+                        ...post,
+                        likes: post.isLiked ? post.likes + 1 : post.likes - 1,
+                        isLiked: !post.isLiked,
+                    };
+                }
+                return post;
+            }));
+        }
     };
 
     const handleReply = (postId: string) => {
@@ -287,14 +339,14 @@ export default function CommunityPage() {
                                             <div className="flex items-center gap-3">
                                                 <Users className="w-5 h-5 text-primary" />
                                                 <div>
-                                                    <p className="font-bold">247</p>
+                                                    <p className="font-bold">{stats.onlineCount > 0 ? stats.onlineCount : "..."}</p>
                                                     <p className="text-xs text-muted-foreground">Online Now</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
                                                 <TrendingUp className="w-5 h-5 text-green-500" />
                                                 <div>
-                                                    <p className="font-bold">{posts.length}</p>
+                                                    <p className="font-bold">{stats.postsToday}</p>
                                                     <p className="text-xs text-muted-foreground">Posts Today</p>
                                                 </div>
                                             </div>
