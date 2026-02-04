@@ -248,9 +248,10 @@ export default function AboutPage() {
                         </motion.div>
                     </div>
                 </section>
-            </MainContent>
+            </section>
 
             <Footer />
-        </div>
+        </MainContent>
+        </div >
     );
 }

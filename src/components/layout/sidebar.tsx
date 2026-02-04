@@ -123,7 +123,7 @@ export function Sidebar() {
                             )}
                         </button>
 
-                        {/* Mobile Close Button */}
+                        {/* Mobile Close Button - Enhanced visibility and touch area */}
                         <button
                             type="button"
                             onClick={(e) => {
@@ -131,10 +131,10 @@ export function Sidebar() {
                                 e.stopPropagation();
                                 setIsMobileOpen(false);
                             }}
-                            className="lg:hidden p-3 -mr-2 rounded-lg hover:bg-secondary/50 transition-colors text-muted-foreground cursor-pointer active:scale-95 touch-manipulation"
+                            className="lg:hidden relative z-50 p-2 rounded-lg bg-secondary/80 text-foreground hover:bg-secondary transition-colors cursor-pointer active:scale-95 touch-manipulation border border-border/50 shadow-sm"
                             aria-label="Close menu"
                         >
-                            <ChevronLeft className="w-6 h-6" />
+                            <ChevronLeft className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
