@@ -123,18 +123,20 @@ export function Sidebar() {
                             )}
                         </button>
 
-                        {/* Mobile Close Button - Standard Flow Layout */}
+                        {/* Mobile Close Button - Nuclear Fix */}
                         <button
                             type="button"
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                console.log("Close button clicked"); // Debug log if meaningful
                                 setIsMobileOpen(false);
                             }}
-                            className="lg:hidden flex items-center justify-center p-2.5 rounded-xl bg-secondary text-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer active:scale-95 touch-manipulation border border-border/50"
+                            className="lg:hidden flex items-center justify-center p-2.5 rounded-xl bg-secondary text-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer active:scale-95 touch-manipulation border border-border/50 relative z-[100]"
+                            style={{ pointerEvents: 'auto' }}
                             aria-label="Close menu"
                         >
-                            <X className="w-6 h-6" />
+                            <X className="w-6 h-6 pointer-events-none" />
                         </button>
                     </div>
                 </div>
