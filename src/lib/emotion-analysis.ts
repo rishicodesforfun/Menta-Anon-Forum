@@ -15,15 +15,7 @@
 import OpenAI from "openai";
 import prisma from "./db";
 
-// Initialize OpenAI client with OpenRouter
-const openai = new OpenAI({
-    apiKey: process.env.OPENROUTER_API_KEY,
-    baseURL: "https://openrouter.ai/api/v1",
-    defaultHeaders: {
-        "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "http://localhost:3000",
-        "X-Title": process.env.OPENROUTER_SITE_NAME || "MentaMind",
-    }
-});
+// OpenAI client initialized inside function to prevent build-time errors
 
 // Types for emotion analysis
 export interface EmotionAnalysisResult {
@@ -88,6 +80,16 @@ export async function analyzeAndStoreEmotions(
             .join("\n");
 
         const prompt = ANALYSIS_PROMPT.replace("<<<CONVERSATION>>>", conversationText);
+
+        // Initialize OpenAI client with OpenRouter
+        const openai = new OpenAI({
+            apiKey: process.env.OPENROUTER_API_KEY,
+            baseURL: "https://openrouter.ai/api/v1",
+            defaultHeaders: {
+                "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "http://localhost:3000",
+                "X-Title": process.env.OPENROUTER_SITE_NAME || "MentaMind",
+            }
+        });
 
         // Call AI for analysis (using smaller/faster model for background task)
         const completion = await openai.chat.completions.create({

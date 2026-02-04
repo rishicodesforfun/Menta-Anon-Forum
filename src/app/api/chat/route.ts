@@ -2,15 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
-// Initialize OpenAI client with OpenRouter base URL
-const openai = new OpenAI({
-    apiKey: process.env.OPENROUTER_API_KEY,
-    baseURL: "https://openrouter.ai/api/v1",
-    defaultHeaders: {
-        "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "http://localhost:3000",
-        "X-Title": process.env.OPENROUTER_SITE_NAME || "MentaMind",
-    }
-});
+// OpenAI client initialized inside handler to prevent build-time errors
 
 // Crisis keywords that trigger immediate safety response
 const CRISIS_KEYWORDS = [
@@ -154,6 +146,16 @@ export async function POST(request: NextRequest) {
                 timestamp: new Date().toISOString(),
             });
         }
+
+        // Initialize OpenAI client with OpenRouter base URL
+        const openai = new OpenAI({
+            apiKey: process.env.OPENROUTER_API_KEY,
+            baseURL: "https://openrouter.ai/api/v1",
+            defaultHeaders: {
+                "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "http://localhost:3000",
+                "X-Title": process.env.OPENROUTER_SITE_NAME || "MentaMind",
+            }
+        });
 
         // Build messages for OpenRouter/OpenAI
         const messages: OpenAI.Chat.ChatCompletionMessageParam[] = [

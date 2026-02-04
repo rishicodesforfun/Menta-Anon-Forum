@@ -11,15 +11,7 @@
 
 import OpenAI from "openai";
 
-// Initialize OpenAI client with OpenRouter
-const openai = new OpenAI({
-    apiKey: process.env.OPENROUTER_API_KEY,
-    baseURL: "https://openrouter.ai/api/v1",
-    defaultHeaders: {
-        "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "http://localhost:3000",
-        "X-Title": process.env.OPENROUTER_SITE_NAME || "MentaMind",
-    }
-});
+// OpenAI client initialized inside function to prevent build-time errors
 
 // Types
 export interface PsychologistSummary {
@@ -94,6 +86,16 @@ export async function generatePsychologistSummary(
         const analysisText = JSON.stringify(aggregated, null, 2);
 
         const prompt = SUMMARY_PROMPT.replace("<<<ANALYSIS_DATA>>>", analysisText);
+
+        // Initialize OpenAI client with OpenRouter
+        const openai = new OpenAI({
+            apiKey: process.env.OPENROUTER_API_KEY,
+            baseURL: "https://openrouter.ai/api/v1",
+            defaultHeaders: {
+                "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "http://localhost:3000",
+                "X-Title": process.env.OPENROUTER_SITE_NAME || "MentaMind",
+            }
+        });
 
         const completion = await openai.chat.completions.create({
             model: "meta-llama/llama-3.3-70b-instruct",
