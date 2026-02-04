@@ -169,7 +169,7 @@ export default function LoginPage() {
                             Welcome to your safe space
                         </h1>
                         <p className="text-muted-foreground text-sm mb-8">
-                            We've created a secure, anonymous identity for you.
+                            We&apos;ve created a secure, anonymous identity for you.
                         </p>
                     </motion.div>
 

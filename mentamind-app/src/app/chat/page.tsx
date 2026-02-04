@@ -26,11 +26,8 @@ interface Message {
     timestamp: Date;
 }
 
-const welcomeMessages = [
-    "Hello! I'm here to listen and support you. How are you feeling today?",
-    "Hi there. This is a safe space to share whatever is on your mind. What would you like to talk about?",
-    "Welcome. I'm here for you, without judgment. What's been on your heart lately?",
-];
+// Fixed opening message per PRD - clear disclaimer but friendly tone
+const OPENING_MESSAGE = "Hi, I'm Mentamind. I'm here to listen and support you through whatever you're feeling. Just to be clear: I'm an AI companion, not a therapist or doctor, and I can't diagnose or replace professional care. But I'm here for you. How are you feeling today?";
 
 const CRISIS_KEYWORDS = [
     "suicide", "kill myself", "end my life", "want to die",
@@ -59,13 +56,12 @@ export default function ChatPage() {
         const id = getAnonymousId();
         setAnonName(generateAnonName(id));
 
-        // Welcome message
-        const welcomeMsg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+        // Fixed opening disclaimer message
         setMessages([
             {
                 id: "welcome",
                 role: "assistant",
-                content: welcomeMsg,
+                content: OPENING_MESSAGE,
                 timestamp: new Date(),
             },
         ]);
@@ -166,12 +162,11 @@ export default function ChatPage() {
     };
 
     const handleReset = () => {
-        const welcomeMsg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
         setMessages([
             {
                 id: "welcome-" + Date.now(),
                 role: "assistant",
-                content: welcomeMsg,
+                content: OPENING_MESSAGE,
                 timestamp: new Date(),
             },
         ]);

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, Share, Flag, MoreHorizontal, Clock } from "lucide-react";
+import { Heart, MessageCircle, Share, Flag, MoreHorizontal, Clock, HandHeart } from "lucide-react";
 import { generateAnonName } from "@/lib/anonymous";
 import { cn } from "@/lib/utils";
 
@@ -29,11 +29,11 @@ function formatTimeAgo(dateString: string): string {
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (seconds < 60) return "just now";
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
-    return date.toLocaleDateString();
+    if (seconds < 60) return "shared just now";
+    if (seconds < 3600) return `shared ${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `shared ${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 604800) return `shared ${Math.floor(seconds / 86400)}d ago`;
+    return `shared on ${date.toLocaleDateString()}`;
 }
 
 export function PostCard({ post, onLike, onReply, onFlag, index = 0 }: PostCardProps) {
@@ -91,21 +91,24 @@ export function PostCard({ post, onLike, onReply, onFlag, index = 0 }: PostCardP
 
             {/* Action buttons - Like first, then comments */}
             <div className="flex items-center gap-1 pt-3 border-t border-border/50">
-                {/* Like Button */}
+                {/* Resonates Button - empathetic alternative to "Like" */}
                 <button
                     onClick={() => onLike?.(post.id)}
                     className={cn(
                         "btn-ghost flex items-center gap-2",
                         post.isLiked && "text-pink-500 hover:text-pink-600"
                     )}
+                    title="This resonates with me"
                 >
-                    <Heart
+                    <HandHeart
                         className={cn(
                             "w-4 h-4 transition-all",
                             post.isLiked && "fill-current scale-110"
                         )}
                     />
-                    <span className="text-sm font-medium">{post.likes}</span>
+                    <span className="text-sm font-medium">
+                        {post.likes > 0 && post.likes} {post.isLiked ? "Resonates" : "This resonates"}
+                    </span>
                 </button>
 
                 {/* Comments Button */}

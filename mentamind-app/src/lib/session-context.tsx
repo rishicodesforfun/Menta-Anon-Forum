@@ -16,6 +16,7 @@ interface SessionContextType {
     logout: () => void;
     refreshSession: () => void;
     generatePostAnonName: () => string;
+    regenerateDisplayName: () => string;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -104,6 +105,24 @@ export function SessionProvider({ children }: { children: ReactNode }) {
         return `${adj} ${animal}`;
     };
 
+    /**
+     * Regenerates the user's display name for enhanced privacy
+     * Allows users to get a fresh anonymous identity if they feel exposed
+     */
+    const regenerateDisplayName = (): string => {
+        const newName = generatePostAnonName();
+        const number = Math.floor(Math.random() * 10000);
+        const fullName = `${newName} #${number}`;
+
+        if (identity) {
+            const newIdentity = { ...identity, name: fullName };
+            localStorage.setItem("mentamind_identity", JSON.stringify(newIdentity));
+            setIdentity(newIdentity);
+        }
+
+        return fullName;
+    };
+
     return (
         <SessionContext.Provider
             value={{
@@ -114,6 +133,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
                 logout,
                 refreshSession,
                 generatePostAnonName,
+                regenerateDisplayName,
             }}
         >
             {children}

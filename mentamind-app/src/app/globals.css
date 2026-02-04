@@ -35,6 +35,17 @@
 
         --radius: 0.75rem;
 
+        /* Softer semantic colors - therapeutic, not harsh */
+        --success: 142 76% 45%;
+        /* Gentle green */
+        --success-foreground: 0 0% 100%;
+        --warning: 38 92% 55%;
+        /* Soft amber */
+        --warning-foreground: 0 0% 0%;
+        --info: 199 89% 55%;
+        /* Light blue */
+        --info-foreground: 0 0% 100%;
+
         /* Reddit-style vote colors */
         --upvote: 16 100% 50%;
         --downvote: 214 100% 50%;
@@ -69,6 +80,14 @@
         --border: 215 28% 17%;
         --input: 215 28% 17%;
         --ring: 250 84% 60%;
+
+        /* Softer semantic colors - dark mode */
+        --success: 142 69% 40%;
+        --success-foreground: 0 0% 100%;
+        --warning: 38 85% 50%;
+        --warning-foreground: 0 0% 0%;
+        --info: 199 80% 50%;
+        --info-foreground: 0 0% 100%;
 
         --upvote: 16 100% 50%;
         --downvote: 214 100% 50%;
