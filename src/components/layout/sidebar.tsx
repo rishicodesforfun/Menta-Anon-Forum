@@ -123,21 +123,22 @@ export function Sidebar() {
                             )}
                         </button>
 
-                        {/* Mobile Close Button - Enhanced visibility and touch area */}
-                        <button
-                            type="button"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setIsMobileOpen(false);
-                            }}
-                            className="lg:hidden relative z-50 p-2 rounded-lg bg-secondary/80 text-foreground hover:bg-secondary transition-colors cursor-pointer active:scale-95 touch-manipulation border border-border/50 shadow-sm"
-                            aria-label="Close menu"
-                        >
-                            <ChevronLeft className="w-5 h-5" />
-                        </button>
                     </div>
                 </div>
+
+                {/* Mobile Close Button - Absolute Positioned for Guaranteed Access */}
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsMobileOpen(false);
+                    }}
+                    className="lg:hidden absolute top-4 right-4 z-[60] p-2.5 rounded-xl bg-secondary text-foreground hover:bg-secondary/80 border border-border checkbox-shadow transition-all active:scale-95 touch-manipulation"
+                    aria-label="Close menu"
+                >
+                    <ChevronLeft className="w-6 h-6" />
+                </button>
 
                 {/* Navigation Links */}
                 <nav className="flex-1 p-2 space-y-1">
